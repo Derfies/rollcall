@@ -4,6 +4,7 @@ import constraint
 
 from const import STUDENT_NAMES
 from student import Student
+from board import Board
 
 
 logger = logging.getLogger(__name__)
@@ -12,14 +13,14 @@ logger = logging.getLogger(__name__)
 class Classroom(object):
 
 
-    def __init__(self, num_students, dimensions):
+    def __init__(self, num_students, num_cols, num_rows):
         self.num_students = num_students
-        self.num_cols = dimensions[0]
-        self.num_rows = dimensions[1]
+        self.num_cols = num_cols
+        self.num_rows = num_rows
 
         assert self.num_students <= self.num_cols * self.num_rows, 'More students than there are chairs!'
 
-        self._board = []
+        #self._board = []
         self._students = []
 
     def create_students(self):
@@ -35,8 +36,11 @@ class Classroom(object):
                 self._students.append(empty)
 
     def seat_constraint(self, *args, **kwargs):
+
+        # Constraint that returns permutations where:
+        # - The number of non-empty chairs equals the number of students
+        # - No student is duplicated
         non_empty = filter(lambda x: not x.empty, args)
-        #print len(non_empty), len(set(non_empty)), non_empty, args
         return len(non_empty) == self.num_students and len(non_empty) == len(set(non_empty))
 
     def place_students(self):
@@ -45,6 +49,10 @@ class Classroom(object):
         problem.addConstraint(constraint.FunctionConstraint(self.seat_constraint))
         sols = problem.getSolutions()
         unique_sols = [i for n, i in enumerate(sols) if i not in sols[n + 1:]]
-        print len(unique_sols)
+        #print len(unique_sols)
         for sol in unique_sols:
-            print sol
+            
+            b = Board(self.num_cols, sol)
+            print b
+            print '-' * 35
+        #print self._solution_to_array(unique_sols[0])
